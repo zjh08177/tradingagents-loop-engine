@@ -1,0 +1,4 @@
+# captured live traces — redact-at-source, never commit raw OAuth tokens/keys
+.traces/
+__pycache__/
+.pytest_cache/

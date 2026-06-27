@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "project": "v1-decision-support",
+  "updated_at": null,
+  "note": "Machine-readable mirror of impl-plan-v1-decision-support §0 wave-close table + Tier-A/Tier-B exit criteria. The engine reads/writes this; it is the SSOT of build position, not of the spec (the impl-plan is).",
+  "prerequisites": [
+    {"id": "P1", "desc": "Schwab dev-app registration → OAuth creds (7-day refresh)", "owner": "eric-external", "status": "pending", "blocks": ["live", "tier_b"]},
+    {"id": "P2", "desc": "EDGAR (free, no key) + Marketaux key", "owner": "eric", "status": "pending", "blocks": ["W0"]},
+    {"id": "P3", "desc": "OpenRouter key + pin deep=gpt-5.5 / quick=gpt-5.4-mini + langgraph version", "owner": "lead", "status": "pending", "blocks": ["W0"]},
+    {"id": "P4", "desc": "Record vendor fixtures (Schwab bars/chain/quote, EDGAR, Marketaux) → tests/fixtures/v1/", "owner": "lead", "status": "pending", "blocks": ["W0"]}
+  ],
+  "waves": [
+    {
+      "id": "W0",
+      "title": "Foundation",
+      "tier": "A",
+      "blocked_by_prereqs": ["P2", "P3", "P4"],
+      "tasks": [
+        {"id": "T0.1", "desc": "stand-up CLI + OpenRouter/GPT + provider switch", "status": "pending"},
+        {"id": "T0.2", "desc": "EDGAR module", "status": "pending"},
+        {"id": "T0.3", "desc": "Marketaux module", "status": "pending"},
+        {"id": "T0.4", "desc": "fixtures harness", "status": "pending"}
+      ],
+      "gate_tests": [
+        {"id": "test_e2e_single_ticker", "verdict": "unknown"},
+        {"id": "test_edgar_vendor", "verdict": "unknown"},
+        {"id": "test_marketaux_vendor", "verdict": "unknown"},
+        {"id": "test_fixtures_offline", "verdict": "unknown"},
+        {"id": "test_n2_provider_switch", "verdict": "unknown"}
+      ]
+    },
+    {
+      "id": "W1",
+      "title": "N1 Tier-0 critical path",
+      "tier": "A",
+      "blocked_by_prereqs": [],
+      "tasks": [
+        {"id": "T1.1", "desc": "Envelope/Provenance", "status": "pending"},
+        {"id": "T1.2", "desc": "grounding corpus on AgentState", "status": "pending"},
+        {"id": "T1.3", "desc": "Schwab equity vendor + FixtureEquityVendor", "status": "pending"},
+        {"id": "T1.4", "desc": "§3A in-node snapshot", "status": "pending"},
+        {"id": "T1.5", "desc": "§3C abstain gate (OR-reducer + ABSTAIN_REPORT)", "status": "pending"},
+        {"id": "T1.6", "desc": "§3D catch-boundary wrapper", "status": "pending"}
+      ],
+      "gate_tests": [
+        {"id": "G1a", "verdict": "unknown"},
+        {"id": "G3", "verdict": "unknown"},
+        {"id": "G4", "verdict": "unknown"},
+        {"id": "G11a", "verdict": "unknown"},
+        {"id": "G12", "verdict": "unknown"},
+        {"id": "test_snapshot_in_node", "verdict": "unknown"},
+        {"id": "test_b2_identity_abstain", "verdict": "unknown"},
+        {"id": "test_wrapper_optional_degrade", "verdict": "unknown"},
+        {"id": "test_429_retry_bounded", "verdict": "unknown"},
+        {"id": "test_abstain_report_no_llm_call", "verdict": "unknown"}
+      ]
+    },
+    {
+      "id": "W2",
+      "title": "Output grounding + options + modes",
+      "tier": "A",
+      "blocked_by_prereqs": [],
+      "tasks": [
+        {"id": "T2.1", "desc": "output post-pass + call-site wiring", "status": "pending"},
+        {"id": "T2.2", "desc": "LLM-judge (eval-only)", "status": "pending"},
+        {"id": "T2.3", "desc": "Schwab options module", "status": "pending"},
+        {"id": "T2.4", "desc": "options signals (IV-vs-RV)", "status": "pending"},
+        {"id": "T2.5", "desc": "daily + ad-hoc modes", "status": "pending"}
+      ],
+      "gate_tests": [
+        {"id": "G1b", "verdict": "unknown"},
+        {"id": "G2", "verdict": "unknown"},
+        {"id": "G5", "verdict": "unknown"},
+        {"id": "G6", "verdict": "unknown"},
+        {"id": "G11b", "verdict": "unknown"},
+        {"id": "G13", "verdict": "unknown"},
+        {"id": "G7", "verdict": "unknown"},
+        {"id": "G8", "verdict": "unknown"},
+        {"id": "test_prerank_topk", "verdict": "unknown"},
+        {"id": "test_daily_budget_cutoff", "verdict": "unknown"},
+        {"id": "test_options_chain", "verdict": "unknown"},
+        {"id": "test_options_signals", "verdict": "unknown"},
+        {"id": "test_judge_eval_only", "verdict": "unknown"}
+      ]
+    },
+    {
+      "id": "W3",
+      "title": "Track-record + personas + ops",
+      "tier": "A",
+      "blocked_by_prereqs": [],
+      "tasks": [
+        {"id": "T3.1", "desc": "horizon threading", "status": "pending"},
+        {"id": "T3.2", "desc": "realized-return via Envelope[Bars]", "status": "pending"},
+        {"id": "T3.3", "desc": "ta track report", "status": "pending"},
+        {"id": "T3.4", "desc": "persona judgment nodes", "status": "pending"},
+        {"id": "T3.5", "desc": "ops (thread_id hash, OAuth precheck, cost meter)", "status": "pending"}
+      ],
+      "gate_tests": [
+        {"id": "G9", "verdict": "unknown"},
+        {"id": "G10", "verdict": "unknown"},
+        {"id": "test_live_runs_only", "verdict": "unknown"},
+        {"id": "test_track_report", "verdict": "unknown"},
+        {"id": "test_persona_consumed", "verdict": "unknown"},
+        {"id": "test_thread_id_config_hash", "verdict": "unknown"},
+        {"id": "test_cost_meter", "verdict": "unknown"}
+      ]
+    },
+    {
+      "id": "W4",
+      "title": "Live-acceptance harness (Tier-A deterministic gates)",
+      "tier": "A",
+      "blocked_by_prereqs": [],
+      "tasks": [
+        {"id": "T-ACC.0", "desc": "--emit-trace sidecar (full Trace schema)", "status": "pending"},
+        {"id": "T-ACC.1", "desc": "acceptance harness (runner/verify/judge/report)", "status": "pending"},
+        {"id": "T-ACC.2", "desc": "negative controls (NC1-3 inject fabrication)", "status": "pending"}
+      ],
+      "gate_tests": [
+        {"id": "test_emit_trace_schema", "verdict": "unknown"},
+        {"id": "test_acceptance_deterministic", "verdict": "unknown"},
+        {"id": "test_acceptance_verify_independent", "verdict": "unknown"},
+        {"id": "test_negative_controls_fail", "verdict": "unknown"}
+      ]
+    }
+  ],
+  "ratify_gates": [
+    {"id": "RG1", "desc": "Owner ratifies Tier-A complete + EC10 `-m live` evidence before entering the paid live-acceptance loop (T-ACC.RUN)", "after": "W4", "status": "pending"},
+    {"id": "RG2", "desc": "Owner ratifies the Tier-B trust aggregate (A9: grounded + would-act) → SHIP", "after": "tier_b", "status": "pending"}
+  ],
+  "tier_b": {
+    "title": "AI-driven live acceptance (T-ACC.RUN; loops until all-green)",
+    "status": "pending",
+    "blocked_by_prereqs": ["P1"],
+    "criteria": [
+      {"id": "EC-A1", "desc": "live analyze grounded: 100% cited numbers match an out-of-band source; 0 uncited", "verdict": "unknown"},
+      {"id": "EC-A2", "desc": "extractor recall vs REAL model: 0 ungrounded numbers across ≥10 live reports", "verdict": "unknown"},
+      {"id": "EC-A3", "desc": "live ABSTAIN fires on an induced real data-gap; fabricates nothing", "verdict": "unknown"},
+      {"id": "EC-A4", "desc": "live options emits coherent options_structure from a real chain + real-bar RV", "verdict": "unknown"},
+      {"id": "EC-A5", "desc": "live daily deep-analyzes all held, picks top-K, drops nothing, within budget", "verdict": "unknown"},
+      {"id": "EC-A6", "desc": "live track computes return/alpha from live bars with correct caveats/label", "verdict": "unknown"},
+      {"id": "EC-A7", "desc": "live cost ≤ daily budget; extrapolated month ≤ $200", "verdict": "unknown"},
+      {"id": "EC-A8", "desc": "live provider switch works with zero code change", "verdict": "unknown"},
+      {"id": "EC-A9", "desc": "TRUST VERDICT: skeptical-trader judge says grounded + would-act, backed by A1/A2 evidence; owner ratifies", "verdict": "unknown"}
+    ]
+  }
+}
