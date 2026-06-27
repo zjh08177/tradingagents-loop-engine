@@ -43,17 +43,24 @@ python3 engine.py record-task T0.2 done
 python3 engine.py record-accept EC-A1 pass   # Tier-B live-acceptance criterion
 python3 engine.py prereq P2 done
 python3 engine.py ratify RG1
-python3 engine.py advance     # dispatch next action (stubbed until wired)
+python3 engine.py verify W0      # run W0's gate tests via pytest + record verdicts
+python3 engine.py advance        # do the next action (VERIFY runs; BUILD/LIVE_ACCEPT refuse)
 ```
 
-## Honest stubs (what's NOT wired yet)
+## VERIFY is wired; BUILD / LIVE_ACCEPT are honest stubs
 
-`dispatch()` refuses `BUILD`/`VERIFY`/`LIVE_ACCEPT` with `NotImplementedError`
-because the v1 product does not exist yet — there is nothing to run, so the
-engine will not invent a verdict. Drive the ledger with the `record-*` commands
-meanwhile. Wiring order:
+`dispatch(VERIFY)` is **real**: it runs the wave's `gate_tests` via `pytest`
+(selected with `-k`), parses JUnit XML, and records each pass/fail into the
+ledger. A requested test with no matching testcase is reported `missing` and
+left `unknown` — a missing test is never silently passed. Point it at the v1
+suite by setting `v1_suite_dir` in `status.json` (null until W0 stands the
+suite up); the mechanism is proven against `dispatch_selftest/`.
 
-1. **`VERIFY` → pytest** — run a wave's `gate_tests`, `record-test` each verdict.
+`dispatch(BUILD)` and `dispatch(LIVE_ACCEPT)` still raise `NotImplementedError`
+— no engine exists for them yet, so they refuse rather than fake a verdict.
+Drive those phases with the `record-*` commands meanwhile. Wiring order:
+
+1. **`VERIFY` → pytest** — DONE (`run_verify`).
 2. **`BUILD` → auto-debug / feature-dev** — hand the task off, capture done.
 3. **`LIVE_ACCEPT` → `eval/acceptance/`** — the AI live-acceptance harness.
 4. **Cadence wrapper** — a cron routine for OAuth refresh + market-calendar live

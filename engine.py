@@ -27,8 +27,12 @@ from __future__ import annotations
 import argparse
 import datetime
 import json
+import os
 import pathlib
+import subprocess
 import sys
+import tempfile
+import xml.etree.ElementTree as ET
 
 VERDICTS = {"unknown", "pass", "fail"}
 TASK_STATES = {"pending", "in_progress", "done"}
@@ -206,21 +210,69 @@ def ratify(led: dict, gate_id: str) -> None:
 
 
 # -------------------------------------------------------------------- dispatch
-def dispatch(action: dict) -> None:
-    """Execute the next action. Wiring to the real engines is the NEXT build.
+def run_verify(led: dict, wave_id: str, test_ids: list[str], suite_dir: str) -> dict:
+    """Run the named gate tests via real pytest and record per-test verdicts.
 
-    BUILD      -> hand the task to auto-debug / the feature-dev workflow.
-    VERIFY     -> run the wave's gate_tests via pytest, then record_test() each.
-    LIVE_ACCEPT-> drive the AI live-acceptance harness (eval/acceptance/).
-    Until the v1 product exists there is nothing to run, so we refuse loudly
+    Selects the tests with ``-k`` in ``suite_dir``, parses pytest's JUnit XML
+    (stdlib, no plugin), and records pass/fail into the ledger. A requested test
+    with no matching testcase is reported as ``missing`` and left ``unknown`` —
+    a missing test is never silently marked pass.
+    """
+    with tempfile.TemporaryDirectory() as d:
+        xml_path = os.path.join(d, "report.xml")
+        kexpr = " or ".join(test_ids)
+        subprocess.run(
+            [sys.executable, "-m", "pytest", suite_dir, "-q", "-p", "no:cacheprovider",
+             "-k", kexpr, "--junit-xml", xml_path],
+            capture_output=True,
+        )
+        if not os.path.exists(xml_path):
+            raise RuntimeError(f"pytest produced no JUnit XML for {suite_dir!r}/{kexpr!r}")
+        root = ET.parse(xml_path).getroot()
+
+    passed_by_name: dict[str, bool] = {}
+    for case in root.iter("testcase"):
+        ok = not any(child.tag in ("failure", "error", "skipped") for child in case)
+        passed_by_name[case.get("name")] = ok
+
+    recorded: dict[str, str] = {}
+    missing: list[str] = []
+    for tid in test_ids:
+        matches = [ok for name, ok in passed_by_name.items() if name == tid or tid in name]
+        if not matches:
+            missing.append(tid)
+            continue
+        verdict = "pass" if all(matches) else "fail"
+        record_test(led, wave_id, tid, verdict)
+        recorded[tid] = verdict
+    return {"recorded": recorded, "missing": missing}
+
+
+def dispatch(action: dict, led: dict | None = None, suite_dir: str | None = None):
+    """Execute the next action.
+
+    VERIFY      -> run the wave's gate_tests via pytest + record each (run_verify).
+    BUILD       -> hand the task to auto-debug / the feature-dev workflow (TODO).
+    LIVE_ACCEPT -> drive the AI live-acceptance harness, eval/acceptance/ (TODO).
+
+    VERIFY needs a v1 test suite to run against (``suite_dir`` or the ledger's
+    ``v1_suite_dir``). BUILD/LIVE_ACCEPT have no engine yet, so we refuse loudly
     rather than fake a verdict.
     """
     a = action["action"]
-    if a in {"BUILD", "VERIFY", "LIVE_ACCEPT"}:
+    if a == "VERIFY":
+        sdir = suite_dir or (led or {}).get("v1_suite_dir")
+        if not sdir:
+            raise NotImplementedError(
+                "VERIFY needs v1_suite_dir set in status.json "
+                "(point it at the v1 test suite once W0 stands it up)."
+            )
+        return run_verify(led, action["wave"], action["tests"], sdir)
+    if a in {"BUILD", "LIVE_ACCEPT"}:
         raise NotImplementedError(
             f"dispatch({a}) not wired yet — connect to "
-            "auto-debug (BUILD) / pytest (VERIFY) / eval.acceptance (LIVE_ACCEPT). "
-            "Skeleton drives the ledger via record-* commands meanwhile."
+            "auto-debug (BUILD) / eval.acceptance (LIVE_ACCEPT). "
+            "Drive the ledger via record-* commands meanwhile."
         )
     # HALT / SHIP are terminal — nothing to dispatch.
 
@@ -296,6 +348,8 @@ def main(argv=None) -> int:
     sub.add_parser("status")
     sub.add_parser("validate")
     sub.add_parser("advance")
+    p = sub.add_parser("verify")
+    p.add_argument("wave")
     p = sub.add_parser("record-test")
     p.add_argument("wave"); p.add_argument("test_id"); p.add_argument("verdict")
     p = sub.add_parser("record-task")
@@ -325,7 +379,26 @@ def main(argv=None) -> int:
         print(_human(act))
         if act["halt"] or act["action"] == "SHIP":
             return 0
-        dispatch(act)  # stubbed until wired
+        result = dispatch(act, led=led)  # VERIFY runs+records; BUILD/LIVE_ACCEPT raise
+        if act["action"] == "VERIFY":
+            save_ledger(led, args.ledger)
+            print(f"recorded: {result['recorded']}  missing: {result['missing']}")
+            print(_human(compute_next_action(led)))
+        return 0
+    if args.cmd == "verify":
+        sdir = led.get("v1_suite_dir")
+        if not sdir:
+            print("v1_suite_dir not set in status.json — no v1 suite to run yet")
+            return 1
+        wave = next((w for w in led["waves"] if w["id"] == args.wave), None)
+        if wave is None:
+            print(f"no wave {args.wave!r}")
+            return 1
+        unproven = [g["id"] for g in wave["gate_tests"] if g["verdict"] != "pass"]
+        result = run_verify(led, args.wave, unproven, sdir)
+        save_ledger(led, args.ledger)
+        print(f"recorded: {result['recorded']}  missing: {result['missing']}")
+        print(_human(compute_next_action(led)))
         return 0
 
     # mutations
