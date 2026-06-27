@@ -40,6 +40,7 @@ python3 engine.py validate    # schema + consistency check
 # update the ledger as work lands / CI reports:
 python3 engine.py record-test W0 test_edgar_vendor pass
 python3 engine.py record-task T0.2 done
+python3 engine.py record-accept EC-A1 pass   # Tier-B live-acceptance criterion
 python3 engine.py prereq P2 done
 python3 engine.py ratify RG1
 python3 engine.py advance     # dispatch next action (stubbed until wired)

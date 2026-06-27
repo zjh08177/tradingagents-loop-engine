@@ -267,6 +267,54 @@ def test_set_prereq_done_unblocks_build():
     assert engine.compute_next_action(led)["action"] == "BUILD"
 
 
+# ---- Tier-B criteria mutation (record-accept) -----------------------------
+def test_record_accept_drives_tier_b_to_ship():
+    led = mk_ledger(
+        [mk_wave("W0", ["done"], ["pass"])],
+        prereqs=[prereq("P1", "done")],
+        ratify=[
+            {"id": "RG1", "desc": "", "after": "W0", "status": "ratified"},
+            {"id": "RG2", "desc": "", "after": "tier_b", "status": "ratified"},
+        ],
+        tier_b={
+            "status": "pending",
+            "blocked_by_prereqs": ["P1"],
+            "criteria": [
+                {"id": "EC-A1", "verdict": "unknown"},
+                {"id": "EC-A2", "verdict": "unknown"},
+            ],
+        },
+    )
+    assert engine.compute_next_action(led)["action"] == "LIVE_ACCEPT"
+    engine.record_accept(led, "EC-A1", "pass")
+    engine.record_accept(led, "EC-A2", "pass")
+    assert engine.compute_next_action(led)["action"] == "SHIP"
+
+
+def test_record_accept_rejects_bad_verdict():
+    import pytest
+
+    led = mk_ledger(
+        [mk_wave("W0", ["done"], ["pass"])],
+        tier_b={"status": "pending", "blocked_by_prereqs": [],
+                "criteria": [{"id": "EC-A1", "verdict": "unknown"}]},
+    )
+    with pytest.raises(ValueError):
+        engine.record_accept(led, "EC-A1", "green")
+
+
+def test_record_accept_unknown_criterion_raises():
+    import pytest
+
+    led = mk_ledger(
+        [mk_wave("W0", ["done"], ["pass"])],
+        tier_b={"status": "pending", "blocked_by_prereqs": [],
+                "criteria": [{"id": "EC-A1", "verdict": "unknown"}]},
+    )
+    with pytest.raises(KeyError):
+        engine.record_accept(led, "EC-A99", "pass")
+
+
 # ---- dispatch is an honest stub (EC4) -------------------------------------
 def test_dispatch_build_is_not_yet_wired():
     import pytest

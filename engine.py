@@ -166,6 +166,17 @@ def record_test(led: dict, wave_id: str, test_id: str, verdict: str) -> None:
     raise KeyError(f"no gate test {test_id!r} in wave {wave_id!r}")
 
 
+def record_accept(led: dict, criterion_id: str, verdict: str) -> None:
+    """Record a Tier-B live-acceptance criterion (EC-A1..A9) verdict."""
+    if verdict not in VERDICTS:
+        raise ValueError(f"verdict must be one of {sorted(VERDICTS)}, got {verdict!r}")
+    for c in led["tier_b"]["criteria"]:
+        if c["id"] == criterion_id:
+            c["verdict"] = verdict
+            return
+    raise KeyError(f"no Tier-B criterion {criterion_id!r}")
+
+
 def set_task(led: dict, task_id: str, status: str) -> None:
     if status not in TASK_STATES:
         raise ValueError(f"status must be one of {sorted(TASK_STATES)}, got {status!r}")
@@ -289,6 +300,8 @@ def main(argv=None) -> int:
     p.add_argument("wave"); p.add_argument("test_id"); p.add_argument("verdict")
     p = sub.add_parser("record-task")
     p.add_argument("task_id"); p.add_argument("status")
+    p = sub.add_parser("record-accept")
+    p.add_argument("criterion_id"); p.add_argument("verdict")
     p = sub.add_parser("prereq")
     p.add_argument("pid"); p.add_argument("status")
     p = sub.add_parser("ratify")
@@ -320,6 +333,8 @@ def main(argv=None) -> int:
         record_test(led, args.wave, args.test_id, args.verdict)
     elif args.cmd == "record-task":
         set_task(led, args.task_id, args.status)
+    elif args.cmd == "record-accept":
+        record_accept(led, args.criterion_id, args.verdict)
     elif args.cmd == "prereq":
         set_prereq(led, args.pid, args.status)
     elif args.cmd == "ratify":

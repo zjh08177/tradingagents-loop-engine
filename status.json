@@ -4,10 +4,10 @@
   "updated_at": null,
   "note": "Machine-readable mirror of impl-plan-v1-decision-support §0 wave-close table + Tier-A/Tier-B exit criteria. The engine reads/writes this; it is the SSOT of build position, not of the spec (the impl-plan is).",
   "prerequisites": [
-    {"id": "P1", "desc": "Schwab dev-app registration → OAuth creds (7-day refresh)", "owner": "eric-external", "status": "pending", "blocks": ["live", "tier_b"]},
+    {"id": "P1", "desc": "Schwab dev-app registration → OAuth creds (7-day refresh)", "owner": "eric-external", "status": "pending", "blocks": ["W1-live-schwab", "tier_b"]},
     {"id": "P2", "desc": "EDGAR (free, no key) + Marketaux key", "owner": "eric", "status": "pending", "blocks": ["W0"]},
     {"id": "P3", "desc": "OpenRouter key + pin deep=gpt-5.5 / quick=gpt-5.4-mini + langgraph version", "owner": "lead", "status": "pending", "blocks": ["W0"]},
-    {"id": "P4", "desc": "Record vendor fixtures (Schwab bars/chain/quote, EDGAR, Marketaux) → tests/fixtures/v1/", "owner": "lead", "status": "pending", "blocks": ["W0"]}
+    {"id": "P4", "desc": "Record vendor fixtures (Schwab bars/chain/quote, EDGAR, Marketaux) → tests/fixtures/v1/", "owner": "lead", "status": "pending", "blocks": ["W0", "all-offline-tests"]}
   ],
   "waves": [
     {
@@ -119,7 +119,8 @@
         {"id": "test_emit_trace_schema", "verdict": "unknown"},
         {"id": "test_acceptance_deterministic", "verdict": "unknown"},
         {"id": "test_acceptance_verify_independent", "verdict": "unknown"},
-        {"id": "test_negative_controls_fail", "verdict": "unknown"}
+        {"id": "test_negative_controls_fail", "verdict": "unknown"},
+        {"id": "EC10_m_live_evidence", "verdict": "unknown"}
       ]
     }
   ],
