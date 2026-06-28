@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "project": "v1-decision-support",
-  "updated_at": "2026-06-28T22:30:45.058032+00:00",
+  "updated_at": "2026-06-28T23:57:27.145564+00:00",
   "v1_suite_dir": "TradingAgents-upstream/tests/v1",
   "note": "Machine-readable mirror of impl-plan-v1-decision-support \u00a70 wave-close table + Tier-A/Tier-B exit criteria. The engine reads/writes this; it is the SSOT of build position, not of the spec (the impl-plan is). v1_suite_dir: set to the v1 pytest suite path once W0 stands it up, then `engine.py verify <wave>` runs+records gate tests.",
   "prerequisites": [
@@ -123,59 +123,59 @@
         {
           "id": "T1.4",
           "desc": "\u00a73A in-node snapshot",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "T1.5",
           "desc": "\u00a73C abstain gate (OR-reducer + ABSTAIN_REPORT)",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "T1.6",
           "desc": "\u00a73D catch-boundary wrapper",
-          "status": "pending"
+          "status": "done"
         }
       ],
       "gate_tests": [
         {
           "id": "G1a",
-          "verdict": "unknown"
+          "verdict": "pass"
         },
         {
           "id": "G3",
-          "verdict": "unknown"
+          "verdict": "pass"
         },
         {
           "id": "G4",
-          "verdict": "unknown"
+          "verdict": "pass"
         },
         {
           "id": "G11a",
-          "verdict": "unknown"
+          "verdict": "pass"
         },
         {
           "id": "G12",
-          "verdict": "unknown"
+          "verdict": "pass"
         },
         {
           "id": "test_snapshot_in_node",
-          "verdict": "unknown"
+          "verdict": "pass"
         },
         {
           "id": "test_b2_identity_abstain",
-          "verdict": "unknown"
+          "verdict": "pass"
         },
         {
           "id": "test_wrapper_optional_degrade",
-          "verdict": "unknown"
+          "verdict": "pass"
         },
         {
           "id": "test_429_retry_bounded",
-          "verdict": "unknown"
+          "verdict": "pass"
         },
         {
           "id": "test_abstain_report_no_llm_call",
-          "verdict": "unknown"
+          "verdict": "pass"
         }
       ]
     },
