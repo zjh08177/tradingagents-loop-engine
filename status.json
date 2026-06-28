@@ -7,7 +7,7 @@
   "prerequisites": [
     {
       "id": "P1",
-      "desc": "Schwab dev-app registration \u2192 OAuth creds (7-day refresh)",
+      "desc": "Schwab dev-app: TWO products, serial approval (can't add a 2nd while one is pending). Phase 1 = Market Data Production (blocks W1-live). Phase 2 = Accounts and Trading Production, read-only, add after Phase 1 approves (blocks F7 portfolio-aware, v1.1). Each: OAuth creds w/ 7-day refresh.",
       "owner": "eric-external",
       "status": "pending",
       "blocks": [
