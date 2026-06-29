@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "project": "v1-decision-support",
-  "updated_at": "2026-06-29T03:42:45.688392+00:00",
+  "updated_at": "2026-06-29T04:21:15.681244+00:00",
   "v1_suite_dir": "TradingAgents-upstream/tests/v1",
   "note": "Machine-readable mirror of impl-plan-v1-decision-support \u00a70 wave-close table + Tier-A/Tier-B exit criteria. The engine reads/writes this; it is the SSOT of build position, not of the spec (the impl-plan is). v1_suite_dir: set to the v1 pytest suite path once W0 stands it up, then `engine.py verify <wave>` runs+records gate tests.",
   "prerequisites": [
@@ -338,7 +338,7 @@
         {
           "id": "T-ACC.0",
           "desc": "--emit-trace sidecar (full Trace schema)",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "T-ACC.1",
@@ -354,7 +354,7 @@
       "gate_tests": [
         {
           "id": "test_emit_trace_schema",
-          "verdict": "unknown"
+          "verdict": "pass"
         },
         {
           "id": "test_acceptance_deterministic",
